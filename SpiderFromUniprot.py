@@ -90,44 +90,49 @@ class SpiderUniprot(threading.Thread):
             return None
     
     def step_one(self, text):
-        pattern = re.compile('<tr id="(.*?)" class=" entry selected-row">|<tr id="(.*?)" class=" entry">')
+        text = str(text)
+        pattern = re.compile('<tr id="(.*?)" class=" entry selected-row">|</td><td class="entryID"><a href="/uniprot/.*?">(.*?)</a>')
         items = re.findall(pattern, text)
-        entry = items[0][0]
-        return entry
+        if items:
+            entry = items[0][0]
+            return entry
 
     def step_two(self, text):
-        pattern1 = re.compile('<div id="content-gene" class="entry-overview-content"><h2>(.*?)</h2></div>')
+        pattern1 = re.compile('<div id="content-gene" class="entry-overview-content"><h2>(.*?)</h2></div>|<div id="content-gene" class="entry-overview-content"><h2>(.*?)</h2> <a href="#gene_name_table">')
+        text = str(text)
         item1 = re.findall(pattern1, text)
         gene = '-'
         if  len(item1) != 0:
-            gene = item1[0]
+            gene = item1[0][0]
         pattern2 = re.compile('</script><meta content="(.*?)" name="description"/>')
         item2 = re.findall(pattern2, text)
-        func = item2[0]
+        func = '-'
+        if len(item2) != 0:
+            func = item2[0]
         info = [gene, func]
         return info
     
     def change_form(self):
         self.read_file()
-        name = self.line_queue.get()
-        url1 = "https://www.uniprot.org/uniprot/?query=" + name + "&sort=score"
-        content1 = self.get_page(url1)
-        # entry = self.step_one(content1)
-        entry = name
-        if not entry:
+        while not self.line_queue.empty():
+            name = self.line_queue.get()
+            url1 = "https://www.uniprot.org/uniprot/?query=" + name + "&sort=score"
+            content1 = self.get_page(url1)
+            entry = self.step_one(content1)
+            if not entry:
+                res = "-"
+                func = "-"
+                entry = ''
+            url2 = "https://www.uniprot.org/uniprot/" + entry
+            content2 = self.get_page(url2)
+            info = self.step_two(content2)
             res = "-"
             func = "-"
-            print(self.dict[name] + "\t" + name + "\t" + res + "\t" + func)
-        url2 = "https://www.uniprot.org/uniprot/" + entry
-        content2 = self.get_page(url2)
-        info = self.step_two(content2)
-        res = "-"
-        func = "-"
-        if info[0]:
-            res = info[0]
+            if info[0]:
+                res = info[0]
             if info[1]:
                 func = info[1]
-                print(self.dict[name] + "\t" + name + "\t" + res + "\t" + func)
+            print(self.dict[name] + "\t" + str(name) + "\t" + str(res) + "\t" + str(func))
     
     def run_function(self):
         sys.stderr.write("Start to search function...\n")
