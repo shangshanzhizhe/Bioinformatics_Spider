@@ -113,7 +113,6 @@ class SpiderUniprot(threading.Thread):
         return info
     
     def change_form(self):
-        self.read_file()
         while not self.line_queue.empty():
             name = self.line_queue.get()
             url1 = "https://www.uniprot.org/uniprot/?query=" + name + "&sort=score"
@@ -135,6 +134,7 @@ class SpiderUniprot(threading.Thread):
             print(self.dict[name] + "\t" + str(name) + "\t" + str(res) + "\t" + str(func))
     
     def run_function(self):
+        self.read_file()
         sys.stderr.write("Start to search function...\n")
         ths = []
         for _ in range(self.thread_num):
