@@ -12,16 +12,19 @@ from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
 
 class SpiderUniprot(threading.Thread):
+    
     headers = {
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36'
     }
     proxy_target = 'http://www.xicidaili.com/nn/' + str(random.randint(2, 20))
     ip_list = []
-    def __init__(self):
+
+    def __init__(self, blast = None, type="gene"):
         self.proxy_queue = Queue()
         self.thread_num = 50
         self.proxies = {}
-        self.infile = sys.argv[1]
+        self.infile = blast
+        self.type = type
         self.dict = {}
         self.line_queue = Queue()
 
@@ -113,15 +116,20 @@ class SpiderUniprot(threading.Thread):
         return info
     
     def change_form(self):
+        # out = open(self.outfile, 'w')
         while not self.line_queue.empty():
+            entry = ''
             name = self.line_queue.get()
-            url1 = "https://www.uniprot.org/uniprot/?query=" + name + "&sort=score"
-            content1 = self.get_page(url1)
-            entry = self.step_one(content1)
-            if not entry:
-                res = "-"
-                func = "-"
-                entry = ''
+            if (self.type == "gene"):
+                url1 = "https://www.uniprot.org/uniprot/?query=" + name + "&sort=score"
+                content1 = self.get_page(url1)
+                entry = self.step_one(content1)
+                if not entry:
+                    res = "-"
+                    func = "-"
+                    entry = ''
+            elif (self.type == "swiss"):
+                entry = name
             url2 = "https://www.uniprot.org/uniprot/" + entry
             content2 = self.get_page(url2)
             info = self.step_two(content2)
@@ -133,8 +141,23 @@ class SpiderUniprot(threading.Thread):
                 func = info[1]
             print(self.dict[name] + "\t" + str(name) + "\t" + str(res) + "\t" + str(func))
     
-    def run_function(self):
-        self.read_file()
+    def parse_args(self, argv = None):
+        parser = argparse.ArgumentParser()
+        parser.description = "This script is to convert your gene name to the orthologous human gene name, which based on the blastp result"
+        parser.add_argument("-b", "--blast", help="Your blast result file")
+        parser.add_argument("-t", "--type", help="The blast agsinst type: Homolog Gene (gene) / Swissprot Qurey (swiss), default:gene", default="gene")
+        args = parser.parse_args(argv)
+        self.infile = args.blast
+        self.type = args.type
+
+    def run(self):
+        self.parse_args()
+        if (self.infile):
+            self.run_proxy()
+            self.read_file()
+        else:
+            sys.stderr.write("Try: python SpiderFromUniprot.py --help to see help")
+            sys.exit()
         sys.stderr.write("Start to search function...\n")
         ths = []
         for _ in range(self.thread_num):
@@ -144,7 +167,7 @@ class SpiderUniprot(threading.Thread):
         for th in ths:
             th.join()
         sys.stderr.write("Function searching over...\n")
-
+    
 if __name__ == '__main__':
-    SpiderUniprot().run_proxy()
-    SpiderUniprot().run_function()
+    main = SpiderUniprot()
+    main.run()
