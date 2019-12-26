@@ -1,4 +1,4 @@
-# [SpiderFromUniprot.py](https://github.com/shangshanzhizhe/Bioinformatics_Spider/blob/master/SipderFromUniport/SpiderFromUniprot.py)
+# [SpiderFromUniprot.py](https://github.com/shangshanzhizhe/Bioinformatics_Spider/blob/master/SpiderFromUniprot/SpiderFromUniprot.py)
 
 根据比对到Uniprot库或模式生物的比对结果，从uniprot数据库爬取自己的基因的名称和功能的爬虫脚本
 
