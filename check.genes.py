@@ -1,17 +1,43 @@
 #!/usr/bin/python3
 
 import sys,re
-import pandas as pd
-import xlrd
 
-def read_xls(infile):
-    data = xlrd.open_workbook(infile)
-    table = data.sheets()[0]
-    nrows = table.rows
-    for i in range(nrows):
-        row = table.row(i)
-        print(row)
 
-if __name__ == "__main":
-    infile = sys.argv[1]
-    read_xls(infile)
+def read_file(infile):
+    info = {}
+    f = open(infile,'r')
+    for line in f:
+        if line.startswith('Class'): continue
+        line = str(line.strip())
+        content = line.split('\t')
+        genes = content[10].split(',')
+        for gene in genes:
+            if not gene: continue
+            if gene in info:
+                info[gene].append(content[2])
+            else:
+                info[gene] = [content[2]]
+    return info
+    
+def read_reffile(reffile):
+    reference = {}
+    f = open(reffile, 'r')
+    for line in f:
+        line = line.strip()
+        content = line.split('\t')
+        go_list = content[1].split(',')
+        reference[content[0]] = go_list
+    return reference
+
+def check(reffile, infile):
+    reference = read_reffile(reffile)
+    info = read_file(infile)
+    for gene in info:
+        for goid in info[gene]:
+            if goid not in reference[gene]:
+                print(gene)
+
+if __name__ == "__main__":
+    reffile = sys.argv[1]
+    infile = sys.argv[2]
+    check(reffile, infile)
