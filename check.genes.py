@@ -11,18 +11,17 @@ def read_file(infile):
         line = str(line.strip())
         content = line.split('\t')
         gene_text = ''
-        if re.search(r'\"(.*)\"', content[1]):
-            gene_text = re.search(r'\"(.*)\"', content[1])[1]
+        if re.search(r'\"(.*)\"', content[10]):
+            gene_text = re.search(r'\"(.*)\"', content[10])[1]
         else:
-            gene_text = content[1]
+            gene_text = content[10]
         genes = gene_text.split(',')
-        go = re.search(r'\s+(GO:\d+)\s+', line)[1]
         for gene in genes:
             if not gene: continue
             if gene in info:
-                info[gene].append(go)
+                info[gene].append(content[2])
             else:
-                info[gene] = [go]
+                info[gene] = [content[2]]
     return info
     
 def read_reffile(reffile):
