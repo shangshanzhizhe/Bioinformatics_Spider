@@ -16,12 +16,13 @@ def read_file(infile):
         else:
             gene_text = content[1]
         genes = gene_text.split(',')
+        go = re.search(r'\s+(GO:\d+)\s+', line)[1]
         for gene in genes:
             if not gene: continue
             if gene in info:
-                info[gene].append(content[2])
+                info[gene].append(go)
             else:
-                info[gene] = [content[2]]
+                info[gene] = [go]
     return info
     
 def read_reffile(reffile):
