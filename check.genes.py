@@ -10,7 +10,12 @@ def read_file(infile):
         if line.startswith('Class'): continue
         line = str(line.strip())
         content = line.split('\t')
-        genes = content[10].split(',')
+        gene_text = ''
+        if re.search(r'\"(.*)\"', content[1]):
+            gene_text = re.search(r'\"(.*)\"', content[1])[1]
+        else:
+            gene_text = content[1]
+        genes = gene_text.split(',')
         for gene in genes:
             if not gene: continue
             if gene in info:
@@ -25,12 +30,7 @@ def read_reffile(reffile):
     for line in f:
         line = line.strip()
         content = line.split('\t')
-        go_text = ''
-        if re.search(r'\"(.*)\"', content[1]):
-            go_text = re.search(r'\"(.*)\"', content[1])[1]
-        else:
-            go_text = content[1]
-        go_list = go_text.split(',')
+        go_list = content[1].split(',')
         reference[content[0]] = go_list
     return reference
 
