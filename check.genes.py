@@ -25,7 +25,9 @@ def read_reffile(reffile):
     for line in f:
         line = line.strip()
         content = line.split('\t')
-        go_list = content[1].split(',')
+        if re.search(r'\"(.*)\"', content[1]):
+            go_text = re.search(r'\"(.*)\"', content[1])[1]
+        go_list = go_text.split(',')
         reference[content[0]] = go_list
     return reference
 
@@ -35,7 +37,7 @@ def check(reffile, infile):
     for gene in info:
         for goid in info[gene]:
             if goid not in reference[gene]:
-                print(gene)
+                print(gene + '\t' + goid)
 
 if __name__ == "__main__":
     reffile = sys.argv[1]
