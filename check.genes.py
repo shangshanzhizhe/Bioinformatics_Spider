@@ -25,8 +25,11 @@ def read_reffile(reffile):
     for line in f:
         line = line.strip()
         content = line.split('\t')
+        go_text = ''
         if re.search(r'\"(.*)\"', content[1]):
             go_text = re.search(r'\"(.*)\"', content[1])[1]
+        else:
+            go_text = content[1]
         go_list = go_text.split(',')
         reference[content[0]] = go_list
     return reference
